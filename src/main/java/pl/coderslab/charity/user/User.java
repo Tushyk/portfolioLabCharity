@@ -16,7 +16,7 @@ import java.util.Set;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-//@PasswordMatches
+//@PasswordMatches generuje bledy
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
