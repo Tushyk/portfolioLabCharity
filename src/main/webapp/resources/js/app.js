@@ -197,7 +197,13 @@ document.addEventListener("DOMContentLoaded", function() {
           categories.push(element.parentElement.lastElementChild.innerText.trim());
         }
       })
-      document.getElementById("summaryBags").innerText = quantity +" bags of " + categories.toString();
+      if (quantity === 1) {
+        document.getElementById("summaryBags").innerText = quantity +" worek: " + categories.toString();
+      } else if (quantity > 1 && quantity < 5) {
+        document.getElementById("summaryBags").innerText = quantity +" worki: " + categories.toString();
+      } else {
+        document.getElementById("summaryBags").innerText = quantity +" workow: " + categories.toString();
+      }
 
       li.innerText = document.getElementById("street").value;
       li1.innerText = document.getElementById("city").value;
