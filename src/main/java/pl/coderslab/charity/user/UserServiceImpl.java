@@ -2,7 +2,8 @@ package pl.coderslab.charity.user;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-
+import pl.coderslab.charity.Dto.UserDto;
+import pl.coderslab.charity.error.UserAlreadyExistException;
 import javax.transaction.Transactional;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -15,22 +16,33 @@ public class UserServiceImpl implements UserService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final TokenRepository tokenRepository;
 
+
     public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository,
                            BCryptPasswordEncoder passwordEncoder, TokenRepository tokenRepository) {
         this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.tokenRepository = tokenRepository;
+
     }
     @Override
     public User findByUserName(String username) {
         return userRepository.findByUsername(username);
     }
     @Override
-    public User saveUser(User user) {
-
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setMatchingPassword(passwordEncoder.encode(user.getMatchingPassword()));
+    public User saveUser(UserDto userDto) throws UserAlreadyExistException {
+        if (emailExists(userDto.getEmail())) {
+            throw new UserAlreadyExistException("There is an account with that email address: "
+                    + userDto.getEmail());
+        }
+        if (usernameExists(userDto.getUsername())) {
+            throw new UserAlreadyExistException("There is an account with that username: "
+                    + userDto.getUsername());
+        }
+        User user = new User();
+        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
+        user.setEmail(userDto.getEmail());
+        user.setUsername(userDto.getUsername());
         user.setEnabled(0);
         Role userRole = roleRepository.findByName("ROLE_USER");
         user.setRoles(new HashSet<>(Arrays.asList(userRole)));
@@ -45,18 +57,22 @@ public class UserServiceImpl implements UserService {
         tokenRepository.save(myToken);
     }
     @Override
-    public void saveAdmin(User user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setMatchingPassword(passwordEncoder.encode(user.getMatchingPassword()));
+    public void saveAdmin(UserDto userDto) {
+        User user = new User();
+        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
+        user.setEmail(userDto.getEmail());
+        user.setUsername(userDto.getUsername());
         user.setEnabled(1);
         Role userRole = roleRepository.findByName("ROLE_ADMIN");
         user.setRoles(new HashSet<>(Arrays.asList(userRole)));
         userRepository.save(user);
     }
     @Override
-    public void saveSuperAdmin(User user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setMatchingPassword(passwordEncoder.encode(user.getMatchingPassword()));
+    public void saveSuperAdmin(UserDto userDto) {
+        User user = new User();
+        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
+        user.setEmail(userDto.getEmail());
+        user.setUsername(userDto.getUsername());
         user.setEnabled(1);
         Role userRole = roleRepository.findByName("ROLE_SUPER-ADMIN");
         user.setRoles(new HashSet<>(Arrays.asList(userRole)));

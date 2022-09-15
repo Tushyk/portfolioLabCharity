@@ -18,9 +18,8 @@
     <h2>edytuj dane admina</h2>
     <c:url var="edit_url" value="/super-admin/update/admin"/>
     <form:form method="post" modelAttribute="admin" action="${edit_url}">
-        <form:hidden path="id"/>
-        <form:hidden path="roles"/>
         <div class="form-group">
+            <form:hidden path="id"/>
             <form:input path="username" placeholder="username"/>
             <form:errors path="username"/>
         </div>

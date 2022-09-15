@@ -16,7 +16,6 @@ import java.util.Set;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-//@PasswordMatches generuje bledy
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,7 +25,6 @@ public class User {
     private String username;
     @NotBlank(message = "pole nie moze byc puste")
     private String password;
-    private String matchingPassword;
     @NotBlank(message = "pole nie moze byc puste")
     @Email
     @Column(nullable = false, unique = true, length = 60)

@@ -8,13 +8,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.WebRequest;
+import pl.coderslab.charity.Dto.UserDto;
 import pl.coderslab.charity.donation.Donation;
 import pl.coderslab.charity.donation.DonationRepository;
+import pl.coderslab.charity.error.UserAlreadyExistException;
 
 import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpServletRequest;
@@ -49,25 +48,28 @@ public class UserController {
     }
     @GetMapping("/registration")
     public String registrationForm(Model model) {
-        User user = new User();
-        model.addAttribute("user", user);
+        UserDto userDto = new UserDto();
+        model.addAttribute("user", userDto);
         return "registration";
     }
     @PostMapping("/registration")
-    public String save(@Valid User user, BindingResult result, HttpServletRequest request) {
-        if (result.hasErrors() || !Objects.equals(user.getMatchingPassword(), user.getPassword())){
+    public String save(@Valid @ModelAttribute("user") UserDto userDto, BindingResult result, HttpServletRequest request) {
+        if (result.hasErrors()){
             return "registration";
         }
-        if (userService.emailExists(user.getEmail()) || userService.usernameExists(user.getUsername())){
-            return "registration";
-        }
-        else if (Objects.equals(user.getPassword(), "super")) {
-            userService.saveSuperAdmin(user);
+        else if (Objects.equals(userDto.getPassword(), "super")) {
+            userService.saveSuperAdmin(userDto);
             return "login";
         } else {
-            User registered = userService.saveUser(user);
-            String appUrl = request.getContextPath();
-            eventPublisher.publishEvent(new OnRegistrationCompleteEvent(registered, request.getLocale() ,appUrl));
+            try{
+                User registered = userService.saveUser(userDto);
+                String appUrl = request.getContextPath();
+                eventPublisher.publishEvent(new OnRegistrationCompleteEvent(registered, request.getLocale() ,appUrl));
+            } catch (UserAlreadyExistException uaeEx) {
+                return "registration";
+            } catch (RuntimeException e) {
+                return "emailError";
+            }
         }
         return "confirm-registration";
     }
@@ -93,11 +95,11 @@ public class UserController {
                          @RequestParam String username,
                          @RequestParam String email) {
 
-        currentUser.getUser().setUsername(RandomStringUtils.random(50,true,true));
-        currentUser.getUser().setEmail("DFSDGSDVDGDSFBSBDFVDFSD@wp.pl");
-        userRepository.save(currentUser.getUser());
-        if (userService.emailExists(email) || userService.usernameExists(username)){
-            return "redirect:/user/edit";
+        List<User> users = userRepository.findAll();
+        for (User user : users) {
+            if ((Objects.equals(user.getEmail(), email) || Objects.equals(user.getUsername(), username)) && !Objects.equals(user.getId(), currentUser.getUser().getId())) {
+                return "redirect:/user/edit";
+            }
         }
         if (newPassword.equals(repeatPassword) && passwordEncoder.matches(oldPassword, currentUser.getUser().getPassword())) {
             currentUser.getUser().setPassword(passwordEncoder.encode(newPassword));
@@ -149,36 +151,48 @@ public class UserController {
     }
     @GetMapping("/super-admin/add/admin")
     public String addAdmin(Model model) {
-        User user = new User();
-        model.addAttribute("admin", user);
+        UserDto userDto = new UserDto();
+        model.addAttribute("admin", userDto);
         return "admin-registration";
     }
     @PostMapping("/super-admin/add/admin")
-    public String saveAdmin(@Valid User user, BindingResult result) {
-        if (result.hasErrors() || !Objects.equals(user.getMatchingPassword(), user.getPassword())){
+    public String saveAdmin(@Valid UserDto userDto, BindingResult result) {
+        if (result.hasErrors() || !Objects.equals(userDto.getMatchingPassword(), userDto.getPassword())){
             return "admin-registration";
         }
-        if (userService.emailExists(user.getEmail()) || userService.usernameExists(user.getUsername())){
+        if (userService.emailExists(userDto.getEmail()) || userService.usernameExists(userDto.getUsername())){
             return "admin-registration";
         }
-        userService.saveAdmin(user);
+        userService.saveAdmin(userDto);
         return "redirect:/super-admin/admin/list";
     }
     @GetMapping("/super-admin/edit/admin/{id}")
-    public String editAdmin(@PathVariable Long id, Model model, @AuthenticationPrincipal CurrentUser user) {
-        model.addAttribute("admin", userRepository.findById(id).orElseThrow(EntityNotFoundException::new));
+    public String editAdmin(@PathVariable Long id, Model model, @AuthenticationPrincipal CurrentUser currentUser) {
+        UserDto userDto = new UserDto();
+        User user = userRepository.findById(id).orElseThrow(EntityNotFoundException::new);
+        userDto.setUsername(user.getUsername());
+        userDto.setEmail(user.getEmail());
+        userDto.setId(user.getId());
+        model.addAttribute("admin", userDto);
         return "edit-admin";
     }
     @PostMapping("/super-admin/update/admin")
-    public String updateAdmin(@Valid User user, BindingResult result) {
-        if (result.hasErrors() || !Objects.equals(user.getMatchingPassword(), user.getPassword())){
+    public String updateAdmin(@Valid UserDto userDto, BindingResult result) {
+        if (result.hasErrors() || !Objects.equals(userDto.getPassword(), userDto.getMatchingPassword())){
             return "edit-admin";
         }
-        if (userService.emailExists(user.getEmail()) || userService.usernameExists(user.getUsername())){
-            return "edit-admin";
+        List<User> users = userRepository.findAll();
+        for (User user : users) {
+            if ((Objects.equals(user.getEmail(), userDto.getEmail()) || Objects.equals(user.getUsername(), userDto.getUsername())) && !Objects.equals(user.getId(), userDto.getId())){
+                return "edit-admin";
+            }
         }
-            userService.saveAdmin(user);
-            return "redirect:/super-admin/admin/list";
+        User user = userRepository.findById(userDto.getId()).orElseThrow(EntityNotFoundException::new);
+        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
+        user.setEmail(userDto.getEmail());
+        user.setUsername(userDto.getUsername());
+        userRepository.save(user);
+        return "redirect:/super-admin/admin/list";
     }
     @GetMapping("/super-admin/deleteConfirm/admin/{id}")
     public String confirm(Model model, @PathVariable long id) {
@@ -202,19 +216,31 @@ public class UserController {
         return "redirect:/error";
     }
     @GetMapping("/admin/edit/user/{id}")
-    public String editUser(@PathVariable Long id, Model model, @AuthenticationPrincipal CurrentUser user) {
-        model.addAttribute("user", userRepository.findById(id).orElseThrow(EntityNotFoundException::new));
+    public String editUser(@PathVariable Long id, Model model, @AuthenticationPrincipal CurrentUser currentUser) {
+        UserDto userDto = new UserDto();
+        User user = userRepository.findById(id).orElseThrow(EntityNotFoundException::new);
+        userDto.setUsername(user.getUsername());
+        userDto.setEmail(user.getEmail());
+        userDto.setId(user.getId());
+        model.addAttribute("user", userDto);
         return "edit-user-byAdmin";
     }
     @PostMapping("/admin/update/user")
-    public String updateUser(@Valid User user, BindingResult result) {
-        if (result.hasErrors() || !Objects.equals(user.getMatchingPassword(), user.getPassword())){
+    public String updateUser(@Valid UserDto userDto, BindingResult result) {
+        if (result.hasErrors() || !Objects.equals(userDto.getPassword(), userDto.getMatchingPassword())){
             return "edit-user-byAdmin";
         }
-        if (userService.emailExists(user.getEmail()) || userService.usernameExists(user.getUsername())){
-            return "edit-user-byAdmin";
+        List<User> users = userRepository.findAll();
+        for (User user : users) {
+            if ((Objects.equals(user.getEmail(), userDto.getEmail()) || Objects.equals(user.getUsername(), userDto.getUsername())) && !Objects.equals(user.getId(), userDto.getId())){
+                return "edit-user-byAdmin";
+            }
         }
-        userService.saveUser(user);
+        User user = userRepository.findById(userDto.getId()).orElseThrow(EntityNotFoundException::new);
+        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
+        user.setEmail(userDto.getEmail());
+        user.setUsername(userDto.getUsername());
+        userRepository.save(user);
         return "redirect:/admin/user/list";
     }
     @GetMapping("/admin/deleteConfirm/user/{id}")

@@ -1,14 +1,18 @@
 package pl.coderslab.charity.user;
 
+import pl.coderslab.charity.Dto.UserDto;
+import pl.coderslab.charity.error.UserAlreadyExistException;
+
 public interface UserService {
     User findByUserName(String name);
-    User saveUser(User user);
+
+    User saveUser(UserDto userDto) throws UserAlreadyExistException;
 
     void createVerificationToken(User user, String token);
 
-    void saveAdmin(User user);
+    void saveAdmin(UserDto userDto);
 
-    void saveSuperAdmin(User user);
+    void saveSuperAdmin(UserDto userDto);
 
     boolean emailExists(String email);
 

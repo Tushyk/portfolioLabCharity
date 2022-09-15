@@ -17,7 +17,6 @@
 <section class="login-page">
     <h2>dodaj admina</h2>
     <form:form modelAttribute="admin" method="post">
-        <form:hidden path="id"/>
         <div class="form-group">
                 <%--            <input type="email" name="email" placeholder="Email" />--%>
             <form:input path="username" placeholder="username"/>

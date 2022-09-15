@@ -15,28 +15,22 @@
 
 </header>
 <section class="login-page">
-    <h2>edytuj dane uzytkownika</h2>
-    <c:url var="edit_url" value="/admin/update/user"/>
-    <form:form method="post" modelAttribute="user" action="${edit_url}">
+    <h2>zresetuj swoje haslo</h2>
+    <form:form method="post" modelAttribute="user">
         <div class="form-group">
             <form:hidden path="id"/>
-            <form:input path="username" placeholder="username"/>
-            <form:errors path="username"/>
-        </div>
+            <form:hidden path="username"/>
+            <form:hidden path="email"/>
         <div class="form-group">
-            <form:input path="email" placeholder="email"/>
-            <form:errors path="email"/>
-        </div>
-        <div class="form-group">
-            <form:input path="password" placeholder="password"/>
+            <form:input type="password" path="password" placeholder="password"/>
             <form:errors path="password"/>
         </div>
         <div class="form-group">
-            <form:input path="matchingPassword" placeholder="repeat password"/>
-            <form:errors path="matchingPassword"/>
+            <form:input type="password" path="matchingPassword" placeholder="repeat password"/>
+            <form:errors path=""/>
         </div>
         <div class="form-group form-group--buttons">
-            <button class="btn" type="submit">edytuj dane</button>
+            <button class="btn" type="submit">resetuj</button>
         </div>
     </form:form>
 </section>
