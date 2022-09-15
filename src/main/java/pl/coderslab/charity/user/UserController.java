@@ -8,6 +8,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.WebRequest;
 import pl.coderslab.charity.Dto.UserDto;
@@ -53,7 +54,7 @@ public class UserController {
         return "registration";
     }
     @PostMapping("/registration")
-    public String save(@Valid @ModelAttribute("user") UserDto userDto, BindingResult result, HttpServletRequest request) {
+    public String save(@Valid @ModelAttribute("user") UserDto userDto, BindingResult result, HttpServletRequest request, Model model) {
         if (result.hasErrors()){
             return "registration";
         }
@@ -66,6 +67,12 @@ public class UserController {
                 String appUrl = request.getContextPath();
                 eventPublisher.publishEvent(new OnRegistrationCompleteEvent(registered, request.getLocale() ,appUrl));
             } catch (UserAlreadyExistException uaeEx) {
+                String message = uaeEx.getMessage();
+                if (message.contains("@")){
+                    result.rejectValue("email", "errors", message);
+                } else {
+                    result.rejectValue("username", "errors", message);
+                }
                 return "registration";
             } catch (RuntimeException e) {
                 return "emailError";

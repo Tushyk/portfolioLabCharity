@@ -32,11 +32,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public User saveUser(UserDto userDto) throws UserAlreadyExistException {
         if (emailExists(userDto.getEmail())) {
-            throw new UserAlreadyExistException("There is an account with that email address: "
+            throw new UserAlreadyExistException("konto o takim emailu juz isnieje: "
                     + userDto.getEmail());
         }
         if (usernameExists(userDto.getUsername())) {
-            throw new UserAlreadyExistException("There is an account with that username: "
+            throw new UserAlreadyExistException("konto o takim loginie juz istnieje: "
                     + userDto.getUsername());
         }
         User user = new User();

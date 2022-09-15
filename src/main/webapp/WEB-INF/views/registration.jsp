@@ -20,6 +20,7 @@
         <div class="form-group">
             <form:input path="username" placeholder="username"/>
             <form:errors path="username"/>
+
         </div>
         <div class="form-group">
             <form:input path="email" placeholder="email"/>
