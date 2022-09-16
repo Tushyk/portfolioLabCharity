@@ -68,7 +68,7 @@ public class UserController {
                 eventPublisher.publishEvent(new OnRegistrationCompleteEvent(registered, request.getLocale() ,appUrl));
             } catch (UserAlreadyExistException uaeEx) {
                 String message = uaeEx.getMessage();
-                if (message.contains("@")){
+                if (message.contains("konto o takim emailu juz isnieje:")){
                     result.rejectValue("email", "errors", message);
                 } else {
                     result.rejectValue("username", "errors", message);
