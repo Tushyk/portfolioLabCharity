@@ -33,7 +33,7 @@
         </div>
         <div class="form-group">
             <form:input path="matchingPassword" placeholder="repeat password"/>
-            <form:errors path="matchingPassword"/>
+            <form:errors path=""/>
         </div>
         <div class="form-group form-group--buttons">
             <button class="btn" type="submit">edytuj dane</button>

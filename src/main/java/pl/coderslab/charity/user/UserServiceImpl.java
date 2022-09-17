@@ -4,9 +4,13 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import pl.coderslab.charity.Dto.UserDto;
 import pl.coderslab.charity.error.UserAlreadyExistException;
+
+import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
 
 @Service
 @Transactional
@@ -46,6 +50,26 @@ public class UserServiceImpl implements UserService {
         user.setEnabled(0);
         Role userRole = roleRepository.findByName("ROLE_USER");
         user.setRoles(new HashSet<>(Arrays.asList(userRole)));
+        userRepository.save(user);
+        return user;
+    }
+    @Override
+    public User editUser(UserDto userDto) throws UserAlreadyExistException {
+        List<User> users = userRepository.findAll();
+        for (User user : users) {
+            if (Objects.equals(user.getEmail(), userDto.getEmail()) && !Objects.equals(user.getId(), userDto.getId())){
+                throw new UserAlreadyExistException("konto o takim emailu juz isnieje: "
+                        + userDto.getEmail());
+            }
+            if (Objects.equals(user.getUsername(), userDto.getUsername()) && !Objects.equals(user.getId(), userDto.getId())){
+                throw new UserAlreadyExistException("konto o takim loginie juz isnieje: "
+                        + userDto.getUsername());
+            }
+        }
+        User user = userRepository.findById(userDto.getId()).orElseThrow(EntityNotFoundException::new);
+        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
+        user.setEmail(userDto.getEmail());
+        user.setUsername(userDto.getUsername());
         userRepository.save(user);
         return user;
     }

@@ -105,7 +105,7 @@ public class UserController {
         List<User> users = userRepository.findAll();
         for (User user : users) {
             if ((Objects.equals(user.getEmail(), email) || Objects.equals(user.getUsername(), username)) && !Objects.equals(user.getId(), currentUser.getUser().getId())) {
-                return "redirect:/user/edit";
+                return "edit-user";
             }
         }
         if (newPassword.equals(repeatPassword) && passwordEncoder.matches(oldPassword, currentUser.getUser().getPassword())) {
@@ -233,21 +233,21 @@ public class UserController {
         return "edit-user-byAdmin";
     }
     @PostMapping("/admin/update/user")
-    public String updateUser(@Valid UserDto userDto, BindingResult result) {
-        if (result.hasErrors() || !Objects.equals(userDto.getPassword(), userDto.getMatchingPassword())){
+    public String updateUser(@Valid @ModelAttribute("user") UserDto userDto, BindingResult result) {
+        if (result.hasErrors()){
             return "edit-user-byAdmin";
         }
-        List<User> users = userRepository.findAll();
-        for (User user : users) {
-            if ((Objects.equals(user.getEmail(), userDto.getEmail()) || Objects.equals(user.getUsername(), userDto.getUsername())) && !Objects.equals(user.getId(), userDto.getId())){
-                return "edit-user-byAdmin";
+        try{
+            userService.editUser(userDto);
+        }catch (UserAlreadyExistException uaeEx){
+            String message = uaeEx.getMessage();
+            if (message.contains("konto o takim emailu juz isnieje:")){
+                result.rejectValue("email", "errors", message);
+            } else {
+                result.rejectValue("username", "errors", message);
             }
+            return "edit-user-byAdmin";
         }
-        User user = userRepository.findById(userDto.getId()).orElseThrow(EntityNotFoundException::new);
-        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
-        user.setEmail(userDto.getEmail());
-        user.setUsername(userDto.getUsername());
-        userRepository.save(user);
         return "redirect:/admin/user/list";
     }
     @GetMapping("/admin/deleteConfirm/user/{id}")
