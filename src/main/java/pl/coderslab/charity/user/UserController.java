@@ -191,21 +191,21 @@ public class UserController {
         return "edit-admin";
     }
     @PostMapping("/super-admin/update/admin")
-    public String updateAdmin(@Valid UserDto userDto, BindingResult result) {
-        if (result.hasErrors() || !Objects.equals(userDto.getPassword(), userDto.getMatchingPassword())){
+    public String updateAdmin(@Valid @ModelAttribute("admin")  UserDto userDto, BindingResult result) {
+        if (result.hasErrors()){
             return "edit-admin";
         }
-        List<User> users = userRepository.findAll();
-        for (User user : users) {
-            if ((Objects.equals(user.getEmail(), userDto.getEmail()) || Objects.equals(user.getUsername(), userDto.getUsername())) && !Objects.equals(user.getId(), userDto.getId())){
-                return "edit-admin";
+        try{
+            userService.editUser(userDto);
+        }catch (UserAlreadyExistException uaeEx){
+            String message = uaeEx.getMessage();
+            if (message.contains("konto o takim emailu juz isnieje:")){
+                result.rejectValue("email", "errors", message);
+            } else {
+                result.rejectValue("username", "errors", message);
             }
+            return "edit-admin";
         }
-        User user = userRepository.findById(userDto.getId()).orElseThrow(EntityNotFoundException::new);
-        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
-        user.setEmail(userDto.getEmail());
-        user.setUsername(userDto.getUsername());
-        userRepository.save(user);
         return "redirect:/super-admin/admin/list";
     }
     @GetMapping("/super-admin/deleteConfirm/admin/{id}")
