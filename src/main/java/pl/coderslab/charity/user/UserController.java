@@ -163,17 +163,24 @@ public class UserController {
         return "admin-registration";
     }
     @PostMapping("/super-admin/add/admin")
-    public String saveAdmin(@Valid UserDto userDto, BindingResult result) {
-        if (result.hasErrors() || !Objects.equals(userDto.getMatchingPassword(), userDto.getPassword())){
+    public String saveAdmin(@Valid @ModelAttribute("admin") UserDto userDto, BindingResult result) {
+        if (result.hasErrors()){
             return "admin-registration";
         }
-        if (userService.emailExists(userDto.getEmail()) || userService.usernameExists(userDto.getUsername())){
+        try {
+            userService.saveAdmin(userDto);
+        } catch (UserAlreadyExistException uaeEx) {
+            String message = uaeEx.getMessage();
+            if (message.contains("konto o takim emailu juz isnieje:")) {
+                result.rejectValue("email", "errors", message);
+            } else {
+                result.rejectValue("username", "errors", message);
+            }
             return "admin-registration";
         }
-        userService.saveAdmin(userDto);
         return "redirect:/super-admin/admin/list";
-    }
-    @GetMapping("/super-admin/edit/admin/{id}")
+        }
+        @GetMapping("/super-admin/edit/admin/{id}")
     public String editAdmin(@PathVariable Long id, Model model, @AuthenticationPrincipal CurrentUser currentUser) {
         UserDto userDto = new UserDto();
         User user = userRepository.findById(id).orElseThrow(EntityNotFoundException::new);

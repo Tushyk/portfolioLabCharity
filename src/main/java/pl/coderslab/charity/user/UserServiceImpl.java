@@ -81,7 +81,15 @@ public class UserServiceImpl implements UserService {
         tokenRepository.save(myToken);
     }
     @Override
-    public void saveAdmin(UserDto userDto) {
+    public void saveAdmin(UserDto userDto) throws UserAlreadyExistException  {
+        if (emailExists(userDto.getEmail())) {
+            throw new UserAlreadyExistException("konto o takim emailu juz isnieje: "
+                    + userDto.getEmail());
+        }
+        if (usernameExists(userDto.getUsername())) {
+            throw new UserAlreadyExistException("konto o takim loginie juz istnieje: "
+                    + userDto.getUsername());
+        }
         User user = new User();
         user.setPassword(passwordEncoder.encode(userDto.getPassword()));
         user.setEmail(userDto.getEmail());
