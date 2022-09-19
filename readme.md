@@ -1,10 +1,11 @@
 
-Przed przystąpieniem do pracy  przeczytaj poniższe wskazówki.
-## Jak zacząć?
 
-1. Zaimportuj projekt jako projekt `Maven`, wg poniższych wskazówek:
+## App about sending donations to charity institutions.
 
-	* W `IntelliJ` wybieramy: `File –> New –> Project from Existing Sources...`
-	* Wskazujemy lokalizację katalogu ze sklonowanym projektem i zatwierdzamy.
-	* Następnie w nowym oknie wybieramy: `Import project from external model` i wskazujemy `Maven`
-	* Wybieramy kolejno opcje: `Next –> Next –> Next –> Finish`
+1. To properly check the app, you have to:
+
+	* in SQL table manually add three roles in table `role`: `ROLE_USER`, `ROLE_ADMIN` and `ROLE_SUPER_ADMIN`.
+	* Register new user and type password: `super`, it makes role of user SUPER-ADMIN(temporary solution).
+	* In app click on bar `Fundacje i organizacje`, and add at least one institution.
+	
+Simply app to sending donations, where I focused on more advanced registration process.
