@@ -2,6 +2,7 @@ package pl.coderslab.charity.Dto;
 
 import lombok.*;
 import pl.coderslab.charity.validations.PasswordMatches;
+import pl.coderslab.charity.validations.ValidPassword;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
@@ -20,6 +21,7 @@ public class UserDto {
 
     @NotNull
     @NotEmpty
+    @ValidPassword
     private String password;
     private String matchingPassword;
     private Long id;

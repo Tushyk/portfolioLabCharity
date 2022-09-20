@@ -18,10 +18,10 @@ public class SpringDataUserDetailsService implements UserDetailsService {
         this.userService = userService;
     }
     @Override
-    public UserDetails loadUserByUsername(String username) {
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userService.findByUserName(username);
         if (user == null || user.getEnabled() == 0) {
-            throw new UsernameNotFoundException(username);
+            throw new UsernameNotFoundException("No user found with username: " + username);
         }
         Set<GrantedAuthority> grantedAuthorities = new HashSet<>();
         user.getRoles().forEach(r ->

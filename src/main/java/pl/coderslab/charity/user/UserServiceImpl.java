@@ -35,6 +35,15 @@ public class UserServiceImpl implements UserService {
     }
     @Override
     public User saveUser(UserDto userDto) throws UserAlreadyExistException {
+        User user = userExistCheck(userDto);
+        user.setEnabled(0);
+        Role userRole = roleRepository.findByName("ROLE_USER");
+        user.setRoles(new HashSet<>(Arrays.asList(userRole)));
+        userRepository.save(user);
+        return user;
+    }
+
+    private User userExistCheck(UserDto userDto) {
         if (emailExists(userDto.getEmail())) {
             throw new UserAlreadyExistException("konto o takim emailu juz isnieje: "
                     + userDto.getEmail());
@@ -47,12 +56,9 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(userDto.getPassword()));
         user.setEmail(userDto.getEmail());
         user.setUsername(userDto.getUsername());
-        user.setEnabled(0);
-        Role userRole = roleRepository.findByName("ROLE_USER");
-        user.setRoles(new HashSet<>(Arrays.asList(userRole)));
-        userRepository.save(user);
         return user;
     }
+
     @Override
     public User editUser(UserDto userDto) throws UserAlreadyExistException {
         List<User> users = userRepository.findAll();
@@ -82,18 +88,7 @@ public class UserServiceImpl implements UserService {
     }
     @Override
     public void saveAdmin(UserDto userDto) throws UserAlreadyExistException  {
-        if (emailExists(userDto.getEmail())) {
-            throw new UserAlreadyExistException("konto o takim emailu juz isnieje: "
-                    + userDto.getEmail());
-        }
-        if (usernameExists(userDto.getUsername())) {
-            throw new UserAlreadyExistException("konto o takim loginie juz istnieje: "
-                    + userDto.getUsername());
-        }
-        User user = new User();
-        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
-        user.setEmail(userDto.getEmail());
-        user.setUsername(userDto.getUsername());
+        User user = userExistCheck(userDto);
         user.setEnabled(1);
         Role userRole = roleRepository.findByName("ROLE_ADMIN");
         user.setRoles(new HashSet<>(Arrays.asList(userRole)));
@@ -112,11 +107,11 @@ public class UserServiceImpl implements UserService {
     }
     @Override
     public boolean emailExists(String email) {
-        return userRepository.findByEmail(email) != null; // proba sprawdzania czy konto istnieje
+        return userRepository.findByEmail(email) != null;
     }
     @Override
     public boolean usernameExists(String username) {
-        return userRepository.findByUsername(username) != null; // proba sprawdzania czy konto istnieje
+        return userRepository.findByUsername(username) != null;
     }
     @Override
     public VerificationToken getVerificationToken(String VerificationToken) {
