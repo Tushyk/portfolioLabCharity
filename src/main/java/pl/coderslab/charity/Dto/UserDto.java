@@ -21,7 +21,7 @@ public class UserDto {
 
     @NotNull
     @NotEmpty
-    @ValidPassword
+    @ValidPassword // commit for easier registration
     private String password;
     private String matchingPassword;
     private Long id;
