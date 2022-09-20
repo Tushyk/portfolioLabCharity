@@ -201,7 +201,7 @@ document.addEventListener("DOMContentLoaded", function() {
         document.getElementById("summaryBags").innerText = quantity +" worek: " + categories.toString();
       } else if (quantity > 1 && quantity < 5) {
         document.getElementById("summaryBags").innerText = quantity +" worki: " + categories.toString();
-      } else {
+      } else if (quantity >= 5) {
         document.getElementById("summaryBags").innerText = quantity +" workow: " + categories.toString();
       }
 
