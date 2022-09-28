@@ -106,6 +106,18 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
     }
     @Override
+    public  void  blockUser(Long id) {
+        User user = userRepository.findById(id).orElseThrow(EntityNotFoundException::new);
+        user.setEnabled(0);
+        userRepository.save(user);
+    }
+    @Override
+    public  void  unblockUser(Long id) {
+        User user = userRepository.findById(id).orElseThrow(EntityNotFoundException::new);
+        user.setEnabled(1);
+        userRepository.save(user);
+    }
+    @Override
     public boolean emailExists(String email) {
         return userRepository.findByEmail(email) != null;
     }

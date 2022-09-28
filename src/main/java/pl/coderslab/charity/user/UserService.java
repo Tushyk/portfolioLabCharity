@@ -16,6 +16,10 @@ public interface UserService {
 
     void saveSuperAdmin(UserDto userDto);
 
+    void  blockUser(Long id);
+
+    void  unblockUser(Long id);
+
     boolean emailExists(String email);
 
     boolean usernameExists(String username);

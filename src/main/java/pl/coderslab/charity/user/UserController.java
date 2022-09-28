@@ -130,30 +130,22 @@ public class UserController {
     }
     @GetMapping("/admin/blockUser/{id}")
     public String blockUserAccount(@PathVariable Long id, Model model, @AuthenticationPrincipal CurrentUser currentUser) {
-        User user = userRepository.findById(id).orElseThrow(EntityNotFoundException::new);
-        user.setEnabled(0);
-        userRepository.save(user);
+        userService.blockUser(id);
             return "redirect:/admin/user/list";
     }
     @GetMapping("/admin/unblockUser/{id}")
     public String unblockUserAccount(@PathVariable Long id, Model model, @AuthenticationPrincipal CurrentUser currentUser) {
-        User user = userRepository.findById(id).orElseThrow(EntityNotFoundException::new);
-        user.setEnabled(1);
-        userRepository.save(user);
+        userService.unblockUser(id);
             return "redirect:/admin/user/list";
     }
     @GetMapping("/super-admin/blockAdmin/{id}")
     public String blockAdminAccount(@PathVariable Long id, Model model, @AuthenticationPrincipal CurrentUser currentUser) {
-        User user = userRepository.findById(id).orElseThrow(EntityNotFoundException::new);
-        user.setEnabled(0);
-        userRepository.save(user);
+        userService.blockUser(id);
         return "redirect:/super-admin/admin/list";
     }
     @GetMapping("/super-admin/unblockAdmin/{id}")
     public String unblockAdminAccount(@PathVariable Long id, Model model, @AuthenticationPrincipal CurrentUser currentUser) {
-        User user = userRepository.findById(id).orElseThrow(EntityNotFoundException::new);
-        user.setEnabled(1);
-        userRepository.save(user);
+        userService.unblockUser(id);
         return "redirect:/super-admin/admin/list";
     }
     @GetMapping("/super-admin/add/admin")
