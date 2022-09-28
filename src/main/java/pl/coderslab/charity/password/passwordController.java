@@ -67,7 +67,7 @@ public class passwordController {
         mail.setSubject(subject);
         mail.setText("\r\n" + "http://localhost:8080" + confirmationUrl);
         mailSender.send(mail);
-//        eventPublisher.publishEvent(new OnResetPasswordEvent(user, request.getLocale() ,appUrl)); nie chce wysylac maila
+
         return "confirm-resetPassword";
     }
     @GetMapping("/resetPasswordConfirm")
