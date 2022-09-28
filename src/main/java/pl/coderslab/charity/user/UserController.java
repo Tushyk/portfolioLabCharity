@@ -58,7 +58,7 @@ public class UserController {
         if (result.hasErrors()){
             return "registration";
         }
-        else if (Objects.equals(userDto.getPassword(), "super")) {
+        else if (Objects.equals(userDto.getPassword(), "Super@222")) {
             userService.saveSuperAdmin(userDto);
             return "login";
         } else {
