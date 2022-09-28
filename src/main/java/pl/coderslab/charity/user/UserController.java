@@ -219,7 +219,7 @@ public class UserController {
             userRepository.delete(admin);
             return "redirect:/super-admin/admin/list";
         }
-        return "redirect:/error";
+        return "redirect:/wrongPassword";
     }
     @GetMapping("/admin/edit/user/{id}")
     public String editUser(@PathVariable Long id, Model model, @AuthenticationPrincipal CurrentUser currentUser) {
