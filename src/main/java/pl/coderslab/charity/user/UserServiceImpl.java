@@ -3,7 +3,10 @@ package pl.coderslab.charity.user;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import pl.coderslab.charity.Dto.UserDto;
+import pl.coderslab.charity.donation.Donation;
+import pl.coderslab.charity.donation.DonationRepository;
 import pl.coderslab.charity.error.UserAlreadyExistException;
+import pl.coderslab.charity.error.WrongPasswordException;
 
 import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
@@ -19,15 +22,16 @@ public class UserServiceImpl implements UserService {
     private final RoleRepository roleRepository;
     private final BCryptPasswordEncoder passwordEncoder;
     private final TokenRepository tokenRepository;
+    private final DonationRepository donationRepository;
 
 
     public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository,
-                           BCryptPasswordEncoder passwordEncoder, TokenRepository tokenRepository) {
+                           BCryptPasswordEncoder passwordEncoder, TokenRepository tokenRepository, DonationRepository donationRepository) {
         this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.tokenRepository = tokenRepository;
-
+        this.donationRepository = donationRepository;
     }
     @Override
     public User findByUserName(String username) {
@@ -41,6 +45,19 @@ public class UserServiceImpl implements UserService {
         user.setRoles(new HashSet<>(Arrays.asList(userRole)));
         userRepository.save(user);
         return user;
+    }
+    @Override
+    public void deleteUser(Long id, String password, CurrentUser currentUser) throws WrongPasswordException {
+        User user = userRepository.findById(id).orElseThrow(EntityNotFoundException::new);
+        if (!passwordEncoder.matches(password, currentUser.getUser().getPassword())){
+            throw  new WrongPasswordException("niepoprawne haslo");
+        }
+        user.setRoles(null);
+        List<Donation> donations = donationRepository.findAllByUserId(id);
+        for (Donation donation : donations) {
+            donation.setUser(null);
+        }
+        userRepository.delete(user);
     }
 
     private User userExistCheck(UserDto userDto) {

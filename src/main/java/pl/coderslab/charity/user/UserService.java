@@ -8,6 +8,8 @@ public interface UserService {
 
     User saveUser(UserDto userDto) throws UserAlreadyExistException;
 
+    void deleteUser(Long id, String password, CurrentUser user);
+
     User editUser(UserDto userDto) throws UserAlreadyExistException;
 
     void createVerificationToken(User user, String token);
