@@ -93,7 +93,10 @@ public class passwordController {
     public String confirmRegistration(@Valid @ModelAttribute("user") UserDto userDto, BindingResult result){
         if (result.hasErrors()){
             User user = userRepository.findById(userDto.getId()).orElseThrow(EntityNotFoundException::new);
-            tokenRepository.delete(tokenRepository.findByUser(user));
+            VerificationToken token = tokenRepository.findByUser(user);
+            if (token != null) {
+                tokenRepository.delete(tokenRepository.findByUser(user));
+            }
             return "reset-password-form";
         }
         User user = userRepository.findById(userDto.getId()).orElseThrow(EntityNotFoundException::new);
