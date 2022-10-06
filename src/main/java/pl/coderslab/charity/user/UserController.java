@@ -90,32 +90,35 @@ public class UserController {
     }
     @GetMapping("/user/edit")
     public String edit(Model model, @AuthenticationPrincipal CurrentUser user) {
-        model.addAttribute("login", user.getUser().getUsername());
-        model.addAttribute("email", user.getUser().getEmail());
+        UserDto userDto = new UserDto();
+        userDto.setUsername(user.getUser().getUsername());
+        userDto.setEmail(user.getUser().getEmail());
+        userDto.setId(user.getUser().getId());
+        model.addAttribute("loggedUser", userDto);
         return "edit-user";
     }
-    @GetMapping("/user/update")
-    public String update(@AuthenticationPrincipal CurrentUser currentUser,
-                         @RequestParam String oldPassword,
-                         @RequestParam String newPassword,
-                         @RequestParam String repeatPassword,
-                         @RequestParam String username,
-                         @RequestParam String email) {
-
-        List<User> users = userRepository.findAll();
-        for (User user : users) {
-            if ((Objects.equals(user.getEmail(), email) || Objects.equals(user.getUsername(), username)) && !Objects.equals(user.getId(), currentUser.getUser().getId())) {
+    @PostMapping("/user/update")
+    public String update(@Valid @ModelAttribute("loggedUser") UserDto loggedUser, BindingResult result,
+                         @AuthenticationPrincipal CurrentUser currentUser,
+                         @RequestParam String oldPassword) {
+        if (result.hasErrors()){
+            return "edit-user";
+        }
+        if (passwordEncoder.matches(oldPassword, currentUser.getUser().getPassword())) {
+            try {
+                userService.editUser(loggedUser);
+            } catch (UserAlreadyExistException uaeEx) {
+                String message = uaeEx.getMessage();
+                if (message.contains("konto o takim emailu juz isnieje:")) {
+                    result.rejectValue("email", "errors", message);
+                } else {
+                    result.rejectValue("username", "errors", message);
+                }
                 return "edit-user";
             }
-        }
-        if (newPassword.equals(repeatPassword) && passwordEncoder.matches(oldPassword, currentUser.getUser().getPassword())) {
-            currentUser.getUser().setPassword(passwordEncoder.encode(newPassword));
-            currentUser.getUser().setUsername(username);
-            currentUser.getUser().setEmail(email);
-            userRepository.save(currentUser.getUser());
             return "redirect:/";
         } else {
-            return "redirect:/user/edit";
+            return "edit-user";
         }
     }
     @GetMapping("/admin/user/list")

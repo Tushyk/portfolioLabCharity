@@ -17,25 +17,30 @@
 <section class="login-page">
     <h2>edytuj dane</h2>
     <c:url var="edit_url" value="/user/update"/>
-    <form action="${edit_url}">
+    <form:form method="post" modelAttribute="loggedUser" action="${edit_url}">
         <div class="form-group">
-            <input type="text" name="username" placeholder="username" value="${login}"/>
+        <form:hidden path="id"/>
+        <form:input path="username" placeholder="username"/>
+        <form:errors path="username"/>
         </div>
         <div class="form-group">
-            <input type="email" name="email" placeholder="email" value="${email}"/>
+        <form:input path="email" placeholder="email"/>
+        <form:errors path="email"/>
         </div>
         <div class="form-group">
             <input type="password" name="oldPassword" placeholder="old password"/>
         </div>
         <div class="form-group">
-            <input type="password" name="newPassword" placeholder="new password"/>
+        <form:input type="password" path="password" placeholder="password"/>
+        <form:errors path="password"/>
         </div>
         <div class="form-group">
-            <input type="password" name="repeatPassword" placeholder="repeat password"/>
+        <form:input type="password" path="matchingPassword" placeholder="repeat password"/>
+        <form:errors path=""/>
         </div>
         <div class="form-group form-group--buttons">
             <button class="btn" type="submit">edytuj dane</button>
         </div>
-    </form>
+    </form:form>
 </section>
 <jsp:include page="parts/footer.jsp"/>
