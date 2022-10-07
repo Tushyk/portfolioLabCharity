@@ -118,6 +118,7 @@ public class UserController {
             }
             return "redirect:/";
         } else {
+            result.rejectValue("id", "errors", "stare haslo dla konta jest nierpawidlowe");
             return "edit-user";
         }
     }

@@ -29,6 +29,7 @@
         </div>
         <div class="form-group">
             <input type="password" name="oldPassword" placeholder="old password"/>
+            <form:errors path="id"/>
         </div>
         <div class="form-group">
         <form:input type="password" path="password" placeholder="password"/>
